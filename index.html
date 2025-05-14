@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Download Data</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 40px;
+      background: #f0f0f5;
+    }
+    .admin-box {
+      max-width: 400px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    .styled-button {
+      background: linear-gradient(135deg, #71b7e6, #9b59b6);
+      color: white;
+      padding: 12px 25px;
+      font-size: 16px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .styled-button:hover {
+      background: linear-gradient(135deg, #9b59b6, #71b7e6);
+    }
+  </style>
+</head>
+<body>
+
+<div class="admin-box">
+  <h2>Admin Panel - Download Registration Data</h2>
+  <button id="downloadExcel" class="styled-button">Download as Excel</button>
+</div>
+
+<!-- XLSX Library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+<script>
+  // Download Data as Excel Button Click Event
+  document.getElementById("downloadExcel").addEventListener("click", async () => {
+  try {
+    const response = await fetch("https://ivf-registerationform.onrender.com/registrations");
+
+    if (!response.ok) {
+      throw new Error("Server error, please try again later.");
+    }
+
+    const data = await response.json();
+
+    if (!data.length) {
+      alert("No data available for download.");
+      return;
+    }
+
+    const worksheet = XLSX.utils.json_to_sheet(data);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+    XLSX.writeFile(workbook, "registrations.xlsx");
+  } catch (error) {
+    alert("Failed to download data: " + error.message);
+  }
+});
+
+    
+</script>
+
+</body>
+</html>
