@@ -41,37 +41,49 @@
   <button id="downloadExcel" class="styled-button">Download as Excel</button>
 </div>
 
-<!-- XLSX Library -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<!-- Firebase + XLSX Export Script -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-app.js";
+  import { getFirestore, collection, getDocs } from "https://www.gstatic.com/firebasejs/11.7.1/firebase-firestore.js";
+  import * as XLSX from "https://cdn.jsdelivr.net/npm/xlsx@0.18.5/+esm";  // ✅ Import XLSX as module
 
-<script>
-  // Download Data as Excel Button Click Event
+  // Firebase config
+  const firebaseConfig = {
+    apiKey: "AIzaSyD_EN2YfjDn3vBaN-NdBKrlDTzs0a-cnww",
+    authDomain: "ivf-dip.firebaseapp.com",
+    projectId: "ivf-dip",
+    storageBucket: "ivf-dip.appspot.com",
+    messagingSenderId: "523010731456",
+    appId: "1:523010731456:web:f6bcedc6b287d4c1312c25"
+  };
+
+  // Init Firebase
+  const app = initializeApp(firebaseConfig);
+  const db = getFirestore(app);
+
+  // Download Excel
   document.getElementById("downloadExcel").addEventListener("click", async () => {
-  try {
-    const response = await fetch("https://ivf-registerationform.onrender.com/registrations");
+    try {
+      const snapshot = await getDocs(collection(db, "registrations"));
+      const data = [];
+      snapshot.forEach(doc => data.push(doc.data()));
 
-    if (!response.ok) {
-      throw new Error("Server error, please try again later.");
+      if (!data.length) {
+        alert("No data available.");
+        return;
+      }
+
+      const worksheet = XLSX.utils.json_to_sheet(data);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
+      XLSX.writeFile(workbook, "registrations.xlsx");
+    } catch (error) {
+      alert("Error: " + error.message);
     }
-
-    const data = await response.json();
-
-    if (!data.length) {
-      alert("No data available for download.");
-      return;
-    }
-
-    const worksheet = XLSX.utils.json_to_sheet(data);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Registrations");
-    XLSX.writeFile(workbook, "registrations.xlsx");
-  } catch (error) {
-    alert("Failed to download data: " + error.message);
-  }
-});
-
-    
+  });
 </script>
+
+
 
 </body>
 </html>
